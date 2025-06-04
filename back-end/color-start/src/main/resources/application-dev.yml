@@ -1,0 +1,28 @@
+spring:
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/colorxx?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+    username: root
+    password: 13675966407hjw#
+    type: com.alibaba.druid.pool.DruidDataSource
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 1
+      connection-test-query: SELECT 1 FROM DUAL
+
+  data:
+    # redis缓存服务配置
+    redis:
+      port: 6379
+      host: 192.168.88.150
+      #password:
+      timeout: 10s
+      database: 3
+# 日志相配置
+logging:
+  level:
+    com.colorone.system.mapper: debug
+    root: debug
+
+filePool: C:\Users\admin\Desktop\demo\colorOne-main\filePool
