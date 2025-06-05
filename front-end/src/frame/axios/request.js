@@ -4,6 +4,7 @@ import qs from 'qs'
 import axios from 'axios'
 import {getToken} from '@/utils/system/token'
 import store from '@/frame/store'
+import router from '@/frame/router'
 
 axios.defaults.headers['Content-Type'] = 'application/json'
 
@@ -33,6 +34,15 @@ service.interceptors.response.use((response) => {
     //默认成功状态
     const code = response.data.code || 200
     if (code === 401) {
+        // 检查当前路径是否为登录或注册页面
+        const currentPath = router.currentRoute.value.path;
+        const whiteList = ['/login', '/register'];
+        
+        // 如果当前在登录或注册页面，不显示过期提示
+        if (whiteList.includes(currentPath)) {
+            return Promise.reject('error 401');
+        }
+        
         //登录状态已过期，您可以继续留在该页面，或者重新登录
         //window.$message.error('401：' + response.data.msg)
         window.$dialog.warning({

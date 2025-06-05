@@ -91,7 +91,9 @@ public class SecurityUtils {
      */
     public static boolean matchesPassword(String rawPassword, String encodedPassword) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        return passwordEncoder.matches(rawPassword, encodedPassword);
+        boolean matches = passwordEncoder.matches(rawPassword, encodedPassword);
+        System.out.println("密码匹配 - 原始密码: [" + rawPassword + "], 加密密码: [" + encodedPassword + "], 结果: " + matches);
+        return matches;
     }
 
     /**

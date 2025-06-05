@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.colorone.common.constant.Constants;
 import com.colorone.common.utils.SecurityUtils;
 import org.apache.ibatis.reflection.MetaObject;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Date;
 
@@ -48,11 +49,23 @@ public class BaseMetaObjectHandler implements MetaObjectHandler {
                 if (metaObject.hasSetter(del_flag))
                     setFieldValByName(del_flag, Constants.LOGIC_DELETE_FALSE, metaObject);
                 // 创建人
-                if (metaObject.hasSetter(create_by))
-                    setFieldValByName(create_by, SecurityUtils.getUsername(), metaObject);
-                // 创建人
-                if (metaObject.hasSetter(update_by))
-                    setFieldValByName(update_by, SecurityUtils.getUsername(), metaObject);
+                if (metaObject.hasSetter(create_by)) {
+                    try {
+                        setFieldValByName(create_by, SecurityUtils.getUsername(), metaObject);
+                    } catch (AccessDeniedException e) {
+                        // 用户未登录时使用默认值
+                        setFieldValByName(create_by, "system", metaObject);
+                    }
+                }
+                // 更新人
+                if (metaObject.hasSetter(update_by)) {
+                    try {
+                        setFieldValByName(update_by, SecurityUtils.getUsername(), metaObject);
+                    } catch (AccessDeniedException e) {
+                        // 用户未登录时使用默认值
+                        setFieldValByName(update_by, "system", metaObject);
+                    }
+                }
                 // 创建时间
                 if (metaObject.hasSetter(create_time))
                     setFieldValByName(create_time, new Date(), metaObject);
@@ -74,8 +87,14 @@ public class BaseMetaObjectHandler implements MetaObjectHandler {
         if (metaObject.hasSetter(is_auto_field)) {
             if ((Boolean) getFieldValByName(is_auto_field, metaObject)) {
                 // 更新人
-                if (metaObject.hasSetter(update_by))
-                    setFieldValByName(update_by, SecurityUtils.getUsername(), metaObject);
+                if (metaObject.hasSetter(update_by)) {
+                    try {
+                        setFieldValByName(update_by, SecurityUtils.getUsername(), metaObject);
+                    } catch (AccessDeniedException e) {
+                        // 用户未登录时使用默认值
+                        setFieldValByName(update_by, "system", metaObject);
+                    }
+                }
                 // 修改时间
                 if (metaObject.hasSetter(update_time))
                     setFieldValByName(update_time, new Date(), metaObject);

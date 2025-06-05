@@ -4,13 +4,18 @@ import {getToken} from '@/utils/system/token'
 
 
 //不经权限验证的白名单
-const whiteList = ['/login']
+const whiteList = ['/login', '/register']
 
 /*路由守卫*/
 router.beforeEach((to, from, next) => {
+    // 如果是在白名单路径之间跳转，不显示任何提示，直接放行
+    if (whiteList.includes(from.path) && whiteList.includes(to.path)) {
+        return next();
+    }
+    
     if (getToken()) {
-        //token存在时，如果访问登录页跳转到首页
-        if (to.path === whiteList[0]) {
+        //token存在时，如果访问登录页或注册页跳转到首页
+        if (whiteList.includes(to.path)) {
             next({path: '/'})
         } else {
             //用户登录相关信息不存在
@@ -48,10 +53,13 @@ router.beforeEach((to, from, next) => {
         console.log('router no token')
         //token不存在时
         if (whiteList.indexOf(to.path) !== -1) {
+            // 只有当跳转到登录页且不是从白名单页面来时，才显示登录过期提示
+            if (to.path === '/login' && !whiteList.includes(from.path) && from.path !== '/') {
+                window.$message.warning('登录状态已过期，请重新登录')
+            }
             next()
         } else {
             next(`/login?redirect=${to.path}`)
         }
-
     }
 })

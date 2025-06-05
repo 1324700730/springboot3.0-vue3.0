@@ -28,6 +28,11 @@ const routes = [
         component: () => import('@/views/frame/login.vue'),
     },
     {
+        path: '/register',
+        name: 'register',
+        component: () => import('@/views/frame/register.vue'),
+    },
+    {
         path: '/404',
         name: 'not-found',
         component: () => import('@/views/frame/error/404.vue'),

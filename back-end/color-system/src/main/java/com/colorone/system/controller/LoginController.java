@@ -5,6 +5,7 @@ import com.colorone.common.constant.LoginLogInfo;
 import com.colorone.common.constant.RedisPrefix;
 import com.colorone.common.domain.auth.LoginBody;
 import com.colorone.common.domain.auth.LoginUser;
+import com.colorone.common.domain.auth.User;
 import com.colorone.common.domain.core.RequestResult;
 import com.colorone.common.frame.aspect.annotation.ApiExtension;
 import com.colorone.common.frame.aspect.enums.PermitType;
@@ -14,7 +15,9 @@ import com.colorone.common.frame.captcha.CaptchaText;
 import com.colorone.common.frame.exception.CaptchaException;
 import com.colorone.common.frame.redis.RedisHelper;
 import com.colorone.common.frame.security.web.TokenService;
+import com.colorone.common.frame.security.web.UserDetailsMapper;
 import com.colorone.common.utils.HttpServletUtils;
+import com.colorone.common.utils.SecurityUtils;
 import com.colorone.common.utils.data.IdUtils;
 import com.google.code.kaptcha.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +59,9 @@ public class LoginController {
     @Autowired
     Producer producer;
 
+    @Autowired
+    UserDetailsMapper userDetailsMapper;
+
     /**
      * 验证码类型
      */
@@ -89,6 +95,20 @@ public class LoginController {
 
         String username = loginBody.getUserName();
         String password = loginBody.getPassword();
+
+        // 输出登录信息，方便调试
+        System.out.println("登录尝试 - 用户名: " + username);
+        
+        // 查询用户信息，输出用户ID和存储的密码
+        User user = userDetailsMapper.selectUserByUserName(username);
+        if (user != null) {
+            System.out.println("找到用户 - ID: " + user.getUserId() + ", 存储的密码: " + user.getPassword());
+            // 测试密码匹配
+            boolean matches = SecurityUtils.matchesPassword(password, user.getPassword());
+            System.out.println("密码匹配结果: " + matches);
+        } else {
+            System.out.println("未找到用户");
+        }
 
         // 该方法会调用loadUserByUsername，传递用户密码给到SpringSecurity执行校验，如果校验失败，会进入BadCredentialsException
         Authentication authentication;

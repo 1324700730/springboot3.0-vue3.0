@@ -47,6 +47,12 @@
             登录
           </n-button>
         </n-form-item>
+        
+        <n-form-item class="register-link">
+          <n-button text @click="goToRegister">
+            没有账号？点击注册
+          </n-button>
+        </n-form-item>
       </n-form>
     </div>
   </div>
@@ -95,6 +101,11 @@ const handleLogin = () => {
 }
 //endregion
 
+// 跳转到注册页面
+const goToRegister = () => {
+  router.push('/register')
+}
+
 /** 验证码 **/
 const codeUrl = ref(null)
 const getCaptchaCode = () => {
@@ -134,6 +145,11 @@ const getCaptchaCode = () => {
 
     .login-button {
       width: 100%;
+    }
+    
+    .register-link {
+      text-align: center;
+      margin-top: 10px;
     }
   }
 }

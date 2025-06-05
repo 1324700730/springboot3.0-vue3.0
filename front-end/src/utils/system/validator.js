@@ -118,12 +118,22 @@ const password = (path, message = null, required = true) => {
         path: path,
         rule: {
             required: required,
-            message: message || '密码不能为空且长度在8到30个字符,必须包含数字、字母及符号！',
+            message: message || '密码必须包含数字、大小写字母和特殊字符，长度在8-20位之间',
             trigger: ['blur', 'input'],
             validator(rule, value) {
                 console.log('check password')
-                let reg = /(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{8,30}/
-                return reg.test(value)
+                // 验证密码包含数字
+                const hasNumber = /.*\d+.*/.test(value);
+                // 验证密码包含小写字母
+                const hasLowercase = /.*[a-z]+.*/.test(value);
+                // 验证密码包含大写字母
+                const hasUppercase = /.*[A-Z]+.*/.test(value);
+                // 验证密码包含特殊字符
+                const hasSpecial = /.*[!@#$%^&*()_+\-=\[\]{};':"\\\|,.<>\/?]+.*/.test(value);
+                // 验证密码长度
+                const validLength = value && value.length >= 8 && value.length <= 20;
+                
+                return hasNumber && hasLowercase && hasUppercase && hasSpecial && validLength;
             },
         }
     }

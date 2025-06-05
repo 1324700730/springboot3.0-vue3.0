@@ -29,5 +29,19 @@ public class LoginBody {
      * 验证码
      */
     private String captcha;
-
+    
+    /**
+     * 用户昵称
+     */
+    private String nickName;
+    
+    /**
+     * 用户邮箱
+     */
+    private String email;
+    
+    /**
+     * 手机号码
+     */
+    private String phone;
 }

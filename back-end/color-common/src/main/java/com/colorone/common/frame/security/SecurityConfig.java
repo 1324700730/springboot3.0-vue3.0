@@ -76,6 +76,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         Set<String> anonymousUrls = getApiConfig();
+        // 添加注册接口到匿名访问列表
+        anonymousUrls.add("/register/user");
 
         //CSRF禁用，因为不使用session
         http.csrf(AbstractHttpConfigurer::disable)
@@ -91,7 +93,7 @@ public class SecurityConfig {
                                 //.requestMatchers(HttpMethod.POST, "/web/authenticate").permitAll()
                                 // 允许 SpringMVC 地址匿名访问
                                 .requestMatchers(anonymousUrls.toArray(new String[0])).permitAll()
-                                // 其他所有接口必须有Authority信息，Authority在登录成功后的UserDetailsImpl对象中默认设置“ROLE_USER”
+                                // 其他所有接口必须有Authority信息，Authority在登录成功后的UserDetailsImpl对象中默认设置"ROLE_USER"
                                 //.requestMatchers("/**").hasAnyAuthority("ROLE_USER")
                                 // 允许任意请求被已登录用户访问，不检查Authority
                                 .anyRequest().authenticated()

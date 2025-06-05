@@ -3,10 +3,10 @@ package com.colorone.common.frame.security.web;
 import com.colorone.common.constant.LoginLogInfo;
 import com.colorone.common.domain.auth.LoginUser;
 import com.colorone.common.domain.auth.User;
+import com.colorone.common.utils.data.CollectionUtils;
 import com.colorone.common.utils.PermitUtils;
 import com.colorone.common.utils.ScopeBuild;
 import com.colorone.common.utils.SecurityUtils;
-import com.colorone.common.utils.data.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +39,14 @@ public class SecurityUserDetailsService implements UserDetailsService {
         //用户信息
         User user = userDetailsMapper.selectUserByUserName(userName);
         if (user == null) {
+            log.info("登录用户：{} 不存在.", userName);
             throw new UsernameNotFoundException(String.format(LoginLogInfo.USER_NAME_NOT_FOUND, userName));
         }
 
         //用户角色
         Long[] roles = userDetailsMapper.selectUserRoleByUserId(user.getUserId());
         if (roles == null) {
+            log.info("登录用户：{} 角色不存在.", userName);
             throw new UsernameNotFoundException(String.format(LoginLogInfo.USER_ROLE_NOT_FOUND, userName));
         }
 
@@ -55,20 +57,31 @@ public class SecurityUserDetailsService implements UserDetailsService {
         //用户权根标识
         if (SecurityUtils.isSuperAdmin(user.getUserId()))
             loginUser.getPermits().add(PermitUtils.AllPermitCode);
-        else {
+        else if (roles.length > 0) {
             String[] paths = userDetailsMapper.selectUserRolePermits(CollectionUtils.joinLong(roles, ","));
-            for (String path : paths) {
-                loginUser.getPermits().add(PermitUtils.toPermitCode(path));
+            if (paths != null) {
+                for (String path : paths) {
+                    loginUser.getPermits().add(PermitUtils.toPermitCode(path));
+                }
             }
         }
 
         //用户部门信息,相关子部门
-        loginUser.setDept(userDetailsMapper.selectUserDeptById(user.getDeptId()));
-        loginUser.getDept().setChildren(CollectionUtils.joinLong(userDetailsMapper.selectDeptChildren(user.getDeptId()), ","));
+        if (user.getDeptId() != null) {
+            loginUser.setDept(userDetailsMapper.selectUserDeptById(user.getDeptId()));
+            if (loginUser.getDept() != null) {
+                Long[] children = userDetailsMapper.selectDeptChildren(user.getDeptId());
+                if (children != null && children.length > 0) {
+                    loginUser.getDept().setChildren(CollectionUtils.joinLong(children, ","));
+                }
+            }
+        }
 
         //加载用户权限过滤条件
-        String[] scopes = userDetailsMapper.selectRolesScopeByIds(CollectionUtils.joinLong(roles, ","));
-        loginUser.setScopes(scopes);
+        if (roles.length > 0) {
+            String[] scopes = userDetailsMapper.selectRolesScopeByIds(CollectionUtils.joinLong(roles, ","));
+            loginUser.setScopes(scopes);
+        }
 
         //生成用户角色权限过滤语句，对开启数据权限的接口有效，注解@DataScope
         String scopeWhere = ScopeBuild.where(CollectionUtils.joinString(loginUser.getScopes(), " or "), loginUser);

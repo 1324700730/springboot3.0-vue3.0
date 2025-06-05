@@ -10,6 +10,7 @@ import com.colorone.system.mapper.BaseUserRoleMapper;
 import com.colorone.system.service.BaseUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ import java.util.List;
  * @备注：
  */
 @Service
+@Transactional
 public class BaseUserServiceImpl implements BaseUserService {
     @Autowired
     private BaseUserMapper baseUserMapper;
@@ -34,15 +36,25 @@ public class BaseUserServiceImpl implements BaseUserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Integer addBaseUser(BaseUser user) {
         user.setPassword(SecurityUtils.encryptPassword(user.getPassword()));
+        System.out.println("添加用户 - 用户名: " + user.getUserName() + ", 加密后密码: " + user.getPassword());
         int res = baseUserMapper.insert(user);
-        if (res > 0) {
+        System.out.println("插入用户结果: " + res + ", 生成的用户ID: " + user.getUserId());
+        if (res > 0 && user.getRoles() != null && user.getRoles().length > 0) {
             for (Long roleId : user.getRoles()) {
                 BaseUserRole userRole = new BaseUserRole();
                 userRole.setRoleId(roleId);
                 userRole.setUserId(user.getUserId());
-                baseUserRoleMapper.insert(userRole);
+                userRole.setCreateBy("system");
+                userRole.setUpdateBy("system");
+                System.out.println("插入用户角色关联 - 用户ID: " + user.getUserId() + ", 角色ID: " + roleId);
+                int roleRes = baseUserRoleMapper.insert(userRole);
+                if (roleRes <= 0) {
+                    throw new RuntimeException("添加用户角色关联失败");
+                }
+                System.out.println("插入用户角色关联结果: " + roleRes);
             }
         }
         return res;

@@ -24,7 +24,7 @@ public class User implements Serializable {
     /**
      * comment '用户ID'   bigint(20)  not null autoIncrement
      */
-    @TableId(value = "id", type = IdType.ASSIGN_UUID)
+    @TableId(value = "user_id", type = IdType.AUTO)
     Long userId;
 
     /**
